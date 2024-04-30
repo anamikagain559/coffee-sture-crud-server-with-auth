@@ -4,6 +4,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
+
 // middleware
 
 app.use(cors());
@@ -24,90 +25,82 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
-    const coffeeCollection = client.db("coffeeDB").collection("coffee");
-    const userCollection = client.db("coffeeDB").collection("user");
-    app.get("/coffee", async (req, res) => {
-      const cursor = coffeeCollection.find();
+    const touristsSpotCollection = client
+      .db("travelDB")
+      .collection("touristsSpot");
+    const countryCollection = client.db("travelDB").collection("country");
+
+    app.get("/touristsSpot", async (req, res) => {
+      const cursor = touristsSpotCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     });
 
-    app.get("/coffee/:id", async (req, res) => {
+    app.get("/touristsSpot/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      const result = await coffeeCollection.findOne(query);
+      const result = await touristsSpotCollection.findOne(query);
       res.send(result);
     });
 
-    app.post("/coffee", async (req, res) => {
-      const newCoffee = req.body;
-      console.log(newCoffee);
-      const result = await coffeeCollection.insertOne(newCoffee);
+
+    app.post("/touristsSpot", async (req, res) => {
+      const newTouristsSpot = req.body;
+      const result = await touristsSpotCollection.insertOne(newTouristsSpot);
       res.send(result);
     });
 
-    app.put("/coffee/:id", async (req, res) => {
+    app.put("/touristsSpot/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
-      const updatedCoffee = req.body;
+      const updatedTouristsSpot = req.body;
 
-      const coffee = {
+      const touristsSpot = {
         $set: {
-          name: updatedCoffee.name,
-          quantity: updatedCoffee.quantity,
-          supplier: updatedCoffee.supplier,
-          taste: updatedCoffee.taste,
-          category: updatedCoffee.category,
-          details: updatedCoffee.details,
-          photo: updatedCoffee.photo,
+          image: updatedTouristsSpot.image,
+          tourists_spot_name: updatedTouristsSpot.tourists_spot_name,
+          country_Name: updatedTouristsSpot.country_Name,
+          location: updatedTouristsSpot.location,
+          short_description: updatedTouristsSpot.short_description,
+          average_cost: updatedTouristsSpot.average_cost,
+          seasonality: updatedTouristsSpot.seasonality,
+          travel_time: updatedTouristsSpot.travel_time,
+          totalVisitorsPerYear: updatedTouristsSpot.totalVisitorsPerYear,
+
         },
       };
 
-      const result = await coffeeCollection.updateOne(filter, coffee, options);
+      const result = await touristsSpotCollection.updateOne(filter, touristsSpot, options);
       res.send(result);
     });
 
-    app.delete("/coffee/:id", async (req, res) => {
+    app.delete("/touristsSpot/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      const result = await coffeeCollection.deleteOne(query);
-      res.send(result);
-    });
-    // user related apis
-    app.get("/user", async (req, res) => {
-      const cursor = userCollection.find();
-      const users = await cursor.toArray();
-      res.send(users);
-    });
-
-    app.post("/user", async (req, res) => {
-      const user = req.body;
-      console.log(user);
-      const result = await userCollection.insertOne(user);
+      const result = await touristsSpotCollection.deleteOne(query);
       res.send(result);
     });
 
-    app.patch("/user", async (req, res) => {
-      const user = req.body;
-      const filter = { email: user.email };
-      const updateDoc = {
-        $set: {
-          lastLoggedAt: user.lastLoggedAt,
-        },
-      };
-      const result = await userCollection.updateOne(filter, updateDoc);
+    app.get("/countries", async (req, res) => {
+      const cursor = countryCollection.find();
+      const result = await cursor.toArray();
       res.send(result);
     });
-
-    app.delete("/user/:id", async (req, res) => {
+    app.post("/country", async (req, res) => {
+      const newCountry = req.body;
+      console.log(newCountry);
+      const result = await countryCollection.insertOne(newCountry);
+      res.send(result);
+    });
+    app.get("/country/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      const result = await userCollection.deleteOne(query);
+      const result = await countryCollection.findOne(query);
       res.send(result);
     });
 
-    // Send a ping to confirm a successful connection
+    // Send a ping to confirm a successful  connection
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
@@ -120,9 +113,9 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.send("Coffee maker is Running");
+  res.send("travel spot is Running");
 });
 
 app.listen(port, () => {
-  console.log("coffee server is running ....");
+  console.log("travel server is running ....");
 });
